@@ -320,21 +320,22 @@
 
             // Configurar botões de download
             document.getElementById('csvDownloadBtn').addEventListener('click', exportarCSV);
-           document.getElementById('pdfDownloadBtn').addEventListener('click', function() {
-    // URL do arquivo PDF (substitua pela URL real onde o PDF está hospedado)
-    const pdfUrl = './relatorio-tecnico.pdf';
-    
-    // Cria um elemento de link
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.setAttribute('download', 'relatorio-tecnico.pdf');
-    link.setAttribute('target', '_blank');
-    
-    // Adiciona o link ao documento, clica nele e o remove
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-});
+            document.getElementById('pdfDownloadBtn').addEventListener('click', function() {
+                // URL do arquivo PDF (substitua pela URL real onde o PDF está hospedado)
+                const pdfUrl = './relatorio-tecnico.pdf';
+                
+                // Cria um elemento de link
+                const link = document.createElement('a');
+                link.href = pdfUrl;
+                link.setAttribute('download', 'relatorio-tecnico.pdf');
+                link.setAttribute('target', '_blank');
+                
+                // Adiciona o link ao documento, clica nele e o remove
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        });
 
         // Gráfico de Evolução das Receitas Totais
         function criarGraficoReceitasTotais() {
