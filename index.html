@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Receitas - Jaguapitã</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -17,8 +17,9 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .chart-container {
-            height: 400px;
-            margin-bottom: 30px;
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
         }
         .dashboard-header {
             text-align: center;
@@ -38,16 +39,23 @@
         .bg-light-purple { background-color: #f3e5f5; }
         .metric-value { font-size: 24px; font-weight: bold; }
         .metric-change { color: #2e7d32; font-size: 14px; }
+        .nav-pills .nav-link.active {
+            background-color: #1976d2;
+        }
+        .tab-pane {
+            padding: 20px 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="dashboard-header">
-            <h1>Dashboard de Receitas Municipais - Jaguapitã</h1>
+            <h1>Dashboard Interativo de Receitas Municipais - Jaguapitã</h1>
             <p class="text-muted">Análise das receitas municipais de 2021 a 2025</p>
-            <a href="relatorio-tecnico.pdf" class="btn btn-primary btn-download">
-                Baixar Relatório Completo (PDF)
-            </a>
+            <div class="mt-3">
+                <button id="pdfDownloadBtn" class="btn btn-primary">Baixar Relatório Completo (PDF)</button>
+                <button id="csvDownloadBtn" class="btn btn-success ms-2">Exportar Dados (CSV)</button>
+            </div>
         </div>
 
         <!-- Resumo Estatístico -->
@@ -93,59 +101,97 @@
             </div>
         </div>
 
-        <!-- Gráficos Estáticos -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Evolução das Receitas Totais (2021-2025)</div>
-                    <div class="card-body">
-                        <img src="graficos/receitas_totais.png" alt="Evolução das Receitas Totais" class="img-fluid">
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Composição das Receitas Correntes - 2025</div>
-                    <div class="card-body">
-                        <img src="graficos/composicao_receitas.png" alt="Composição das Receitas" class="img-fluid">
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Navegação em abas -->
+        <ul class="nav nav-pills mb-3" id="dashboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="home-tab" data-bs-toggle="pill" data-bs-target="#visao-geral" type="button" role="tab" aria-controls="visao-geral" aria-selected="true">Visão Geral</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tributarias-tab" data-bs-toggle="pill" data-bs-target="#tributarias" type="button" role="tab" aria-controls="tributarias" aria-selected="false">Receitas Tributárias</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="impostos-tab" data-bs-toggle="pill" data-bs-target="#impostos" type="button" role="tab" aria-controls="impostos" aria-selected="false">Impostos</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="crescimento-tab" data-bs-toggle="pill" data-bs-target="#crescimento" type="button" role="tab" aria-controls="crescimento" aria-selected="false">Crescimento</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="rcl-tab" data-bs-toggle="pill" data-bs-target="#rcl" type="button" role="tab" aria-controls="rcl" aria-selected="false">RCL</button>
+            </li>
+        </ul>
 
-        <div class="row mt-4">
-            <div class="col-md-6">
+        <!-- Conteúdo das abas -->
+        <div class="tab-content" id="dashboardTabsContent">
+            <!-- Visão Geral -->
+            <div class="tab-pane fade show active" id="visao-geral" role="tabpanel" aria-labelledby="home-tab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Evolução das Receitas Totais (2021-2025)</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="receitasTotaisChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Composição das Receitas Correntes - 2025</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="composicaoReceitasChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receitas Tributárias -->
+            <div class="tab-pane fade" id="tributarias" role="tabpanel" aria-labelledby="tributarias-tab">
                 <div class="card">
                     <div class="card-header">Evolução das Receitas Tributárias (2021-2025)</div>
                     <div class="card-body">
-                        <img src="graficos/receitas_tributarias.png" alt="Evolução das Receitas Tributárias" class="img-fluid">
+                        <div class="chart-container">
+                            <canvas id="receitasTributariasChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+
+            <!-- Impostos -->
+            <div class="tab-pane fade" id="impostos" role="tabpanel" aria-labelledby="impostos-tab">
                 <div class="card">
                     <div class="card-header">Evolução dos Principais Impostos (2021-2025)</div>
                     <div class="card-body">
-                        <img src="graficos/impostos.png" alt="Evolução dos Principais Impostos" class="img-fluid">
+                        <div class="chart-container">
+                            <canvas id="impostosChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="row mt-4">
-            <div class="col-md-6">
+            <!-- Crescimento -->
+            <div class="tab-pane fade" id="crescimento" role="tabpanel" aria-labelledby="crescimento-tab">
                 <div class="card">
                     <div class="card-header">Crescimento Anual por Categoria (%)</div>
                     <div class="card-body">
-                        <img src="graficos/crescimento_anual.png" alt="Crescimento Anual por Categoria" class="img-fluid">
+                        <div class="chart-container">
+                            <canvas id="crescimentoChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+
+            <!-- RCL -->
+            <div class="tab-pane fade" id="rcl" role="tabpanel" aria-labelledby="rcl-tab">
                 <div class="card">
                     <div class="card-header">Evolução da Receita Corrente Líquida (2021-2025)</div>
                     <div class="card-body">
-                        <img src="graficos/rcl.png" alt="Evolução da RCL" class="img-fluid">
+                        <div class="chart-container">
+                            <canvas id="rclChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -157,7 +203,6 @@
                 <div class="card">
                     <div class="card-header">
                         Dados Completos (2021-2025)
-                        <a href="dados/receitas_jaguapita_2021-2025.csv" class="btn btn-sm btn-success float-end">Exportar CSV</a>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -172,47 +217,8 @@
                                         <th>Contribuições</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>2021</td>
-                                        <td>R$ 4.616.789,32</td>
-                                        <td>R$ 300.416,56</td>
-                                        <td>R$ 4.207.374,71</td>
-                                        <td>R$ 5.186,67</td>
-                                        <td>R$ 102.004,81</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2022</td>
-                                        <td>R$ 5.833.443,76</td>
-                                        <td>R$ 501.968,22</td>
-                                        <td>R$ 5.231.520,58</td>
-                                        <td>R$ 87.286,53</td>
-                                        <td>R$ 2.670,36</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2023</td>
-                                        <td>R$ 6.642.038,68</td>
-                                        <td>R$ 567.728,15</td>
-                                        <td>R$ 5.894.586,94</td>
-                                        <td>R$ 107.776,34</td>
-                                        <td>R$ 67.431,80</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2024</td>
-                                        <td>R$ 7.533.664,70</td>
-                                        <td>R$ 608.358,46</td>
-                                        <td>R$ 6.782.890,01</td>
-                                        <td>R$ 117.643,88</td>
-                                        <td>R$ 15.552,41</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2025</td>
-                                        <td>R$ 8.241.165,72</td>
-                                        <td>R$ 812.512,25</td>
-                                        <td>R$ 7.298.830,58</td>
-                                        <td>R$ 108.057,43</td>
-                                        <td>R$ 19.739,26</td>
-                                    </tr>
+                                <tbody id="dataTableBody">
+                                    <!-- Será preenchido com JavaScript -->
                                 </tbody>
                             </table>
                         </div>
@@ -227,7 +233,408 @@
         </footer>
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dados do município
+        const dadosReceitas = {
+            anos: ['2021', '2022', '2023', '2024', '2025'],
+            receitasTotais: [4616789.32, 5833443.76, 6642038.68, 7533664.70, 8241165.72],
+            receitasTributarias: [300416.56, 501968.22, 567728.15, 608358.46, 812512.25],
+            transferencias: [4207374.71, 5231520.58, 5894586.94, 6782890.01, 7298830.58],
+            patrimonial: [5186.67, 87286.53, 107776.34, 117643.88, 108057.43],
+            contribuicoes: [102004.81, 2670.36, 67431.80, 15552.41, 19739.26],
+            servicos: [0, 6618.63, 354.66, 6623.77, 0],
+            impostos: {
+                iptu: [1245456.85, 954838.69, 1310534.33, 1776365.70, 1810671.18],
+                iss: [1760369.65, 1612424.71, 2389115.39, 2556878.14, 3357087.54],
+                itbi: [1524948.45, 612615.21, 2526661.71, 2170446.48, 1994546.28],
+                irrf: [1442847.21, 1220992.39, 2227139.14, 3138561.65, 3815749.08]
+            },
+            rcl: [59586145.34, 48375348.03, 72822880.22, 85355395.15, 92299678.74],
+            crescimento: {
+                categorias: ['Receitas Totais', 'Tributárias', 'Transferências', 'Patrimoniais', 'IPTU', 'ISS', 'ITBI', 'IRRF'],
+                y2022: [26.4, 67.1, 24.3, 1582.9, -23.3, -8.4, -59.8, -15.4],
+                y2023: [13.9, 13.1, 12.7, 23.5, 37.3, 48.2, 312.4, 82.4],
+                y2024: [13.4, 7.2, 15.1, 9.2, 35.5, 7.0, -14.1, 40.9],
+                y2025: [9.9, 33.6, 7.6, -8.1, 1.9, 31.3, -8.1, 21.6]
+            },
+            composicao2025: [
+                { categoria: 'Tributárias', valor: 9.9 },
+                { categoria: 'Transferências', valor: 88.6 },
+                { categoria: 'Patrimoniais', valor: 1.3 },
+                { categoria: 'Contribuições', valor: 0.2 },
+                { categoria: 'Outras', valor: 0.0 }
+            ]
+        };
+
+        // Formatador de valores monetários
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2
+            }).format(value);
+        }
+
+        // Cores para os gráficos
+        const chartColors = {
+            blue: 'rgba(54, 162, 235, 0.7)',
+            green: 'rgba(75, 192, 192, 0.7)',
+            yellow: 'rgba(255, 206, 86, 0.7)',
+            orange: 'rgba(255, 159, 64, 0.7)',
+            purple: 'rgba(153, 102, 255, 0.7)',
+            red: 'rgba(255, 99, 132, 0.7)',
+            blueLight: 'rgba(54, 162, 235, 0.4)',
+            greenLight: 'rgba(75, 192, 192, 0.4)',
+            yellowLight: 'rgba(255, 206, 86, 0.4)',
+            orangeLight: 'rgba(255, 159, 64, 0.4)',
+            purpleLight: 'rgba(153, 102, 255, 0.4)',
+            redLight: 'rgba(255, 99, 132, 0.4)'
+        };
+
+        // Inicializar gráficos quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Preencher tabela de dados
+            const tableBody = document.getElementById('dataTableBody');
+            for (let i = 0; i < dadosReceitas.anos.length; i++) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${dadosReceitas.anos[i]}</td>
+                    <td>${formatCurrency(dadosReceitas.receitasTotais[i])}</td>
+                    <td>${formatCurrency(dadosReceitas.receitasTributarias[i])}</td>
+                    <td>${formatCurrency(dadosReceitas.transferencias[i])}</td>
+                    <td>${formatCurrency(dadosReceitas.patrimonial[i])}</td>
+                    <td>${formatCurrency(dadosReceitas.contribuicoes[i])}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+
+            // Inicializar gráficos
+            criarGraficoReceitasTotais();
+            criarGraficoComposicaoReceitas();
+            criarGraficoReceitasTributarias();
+            criarGraficoImpostos();
+            criarGraficoCrescimento();
+            criarGraficoRCL();
+
+            // Configurar botões de download
+            document.getElementById('csvDownloadBtn').addEventListener('click', exportarCSV);
+            document.getElementById('pdfDownloadBtn').addEventListener('click', () => {
+                alert('O download do relatório completo estará disponível após o upload do arquivo PDF no GitHub.');
+            });
+        });
+
+        // Gráfico de Evolução das Receitas Totais
+        function criarGraficoReceitasTotais() {
+            const ctx = document.getElementById('receitasTotaisChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dadosReceitas.anos,
+                    datasets: [{
+                        label: 'Receitas Totais',
+                        data: dadosReceitas.receitasTotais,
+                        borderColor: chartColors.blue,
+                        backgroundColor: chartColors.blueLight,
+                        tension: 0.1,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value).replace('R$', '');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de Composição das Receitas Correntes
+        function criarGraficoComposicaoReceitas() {
+            const ctx = document.getElementById('composicaoReceitasChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: dadosReceitas.composicao2025.map(item => item.categoria),
+                    datasets: [{
+                        data: dadosReceitas.composicao2025.map(item => item.valor),
+                        backgroundColor: [
+                            chartColors.green,
+                            chartColors.blue,
+                            chartColors.yellow,
+                            chartColors.purple,
+                            chartColors.orange
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de Evolução das Receitas Tributárias
+        function criarGraficoReceitasTributarias() {
+            const ctx = document.getElementById('receitasTributariasChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dadosReceitas.anos,
+                    datasets: [{
+                        label: 'Receitas Tributárias',
+                        data: dadosReceitas.receitasTributarias,
+                        backgroundColor: chartColors.green,
+                        borderColor: chartColors.green,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value).replace('R$', '');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de Evolução dos Principais Impostos
+        function criarGraficoImpostos() {
+            const ctx = document.getElementById('impostosChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dadosReceitas.anos,
+                    datasets: [
+                        {
+                            label: 'IPTU',
+                            data: dadosReceitas.impostos.iptu,
+                            backgroundColor: chartColors.blue,
+                            borderColor: chartColors.blue,
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'ISS',
+                            data: dadosReceitas.impostos.iss,
+                            backgroundColor: chartColors.green,
+                            borderColor: chartColors.green,
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'ITBI',
+                            data: dadosReceitas.impostos.itbi,
+                            backgroundColor: chartColors.yellow,
+                            borderColor: chartColors.yellow,
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'IRRF',
+                            data: dadosReceitas.impostos.irrf,
+                            backgroundColor: chartColors.orange,
+                            borderColor: chartColors.orange,
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value).replace('R$', '');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de Crescimento Anual por Categoria
+        function criarGraficoCrescimento() {
+            const ctx = document.getElementById('crescimentoChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dadosReceitas.crescimento.categorias,
+                    datasets: [
+                        {
+                            label: '2022',
+                            data: dadosReceitas.crescimento.y2022,
+                            backgroundColor: chartColors.blue,
+                            borderColor: chartColors.blue,
+                            borderWidth: 1
+                        },
+                        {
+                            label: '2023',
+                            data: dadosReceitas.crescimento.y2023,
+                            backgroundColor: chartColors.green,
+                            borderColor: chartColors.green,
+                            borderWidth: 1
+                        },
+                        {
+                            label: '2024',
+                            data: dadosReceitas.crescimento.y2024,
+                            backgroundColor: chartColors.yellow,
+                            borderColor: chartColors.yellow,
+                            borderWidth: 1
+                        },
+                        {
+                            label: '2025',
+                            data: dadosReceitas.crescimento.y2025,
+                            backgroundColor: chartColors.orange,
+                            borderColor: chartColors.orange,
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de Evolução da RCL
+        function criarGraficoRCL() {
+            const ctx = document.getElementById('rclChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dadosReceitas.anos,
+                    datasets: [{
+                        label: 'Receita Corrente Líquida',
+                        data: dadosReceitas.rcl,
+                        borderColor: chartColors.purple,
+                        backgroundColor: chartColors.purpleLight,
+                        tension: 0.1,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000000).toFixed(1) + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Função para exportar dados em CSV
+        function exportarCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Ano,Receitas_Totais,Receitas_Tributarias,Transferencias,Patrimonial,Contribuicoes,Servicos\n";
+            
+            for (let i = 0; i < dadosReceitas.anos.length; i++) {
+                csvContent += `${dadosReceitas.anos[i]},`;
+                csvContent += `${dadosReceitas.receitasTotais[i]},`;
+                csvContent += `${dadosReceitas.receitasTributarias[i]},`;
+                csvContent += `${dadosReceitas.transferencias[i]},`;
+                csvContent += `${dadosReceitas.patrimonial[i]},`;
+                csvContent += `${dadosReceitas.contribuicoes[i]},`;
+                csvContent += `${dadosReceitas.servicos[i]}\n`;
+            }
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "receitas_jaguapita_2021-2025.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
 </body>
 </html>
